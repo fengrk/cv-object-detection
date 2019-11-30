@@ -1,0 +1,10 @@
+*.pyc
+*.bak
+.idea/
+.vscode/
+*.tar
+*.gz
+*.log
+*.jpg
+*.png
+
