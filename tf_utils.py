@@ -183,14 +183,14 @@ def predict(frozen_inference_dir: str, label_map: str, image_file_list: list, sh
     category_index = label_map_util.create_category_index(categories)
 
     # Size, in inches, of the output images.
-    image_size = (12, 8)
+    image_size = (8, 8)
 
     result_list = []
 
     image_count = len(image_file_list)
     _step = 0
     for image_path_list in iter_list_with_size(image_file_list, size=batch_size):
-        _image_obj_list = [get_image(image_path, width=2666, height=2000) for image_path in image_path_list]
+        _image_obj_list = [get_image(image_path, width=344, height=344) for image_path in image_path_list]
         image_np_list = [load_image_into_numpy_array(image) for image in _image_obj_list]
         output_dict_list = run_inference_image_list(image_np_list, detection_graph)
 
