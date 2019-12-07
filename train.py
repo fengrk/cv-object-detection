@@ -40,7 +40,7 @@ def create_config_file(config_file: str, pretrained_model_dir: str):
                     validate_image_files.add(line.strip().split(",")[0])
         s = re.sub('num_examples: 1101', "num_examples: {}".format(len(validate_image_files)), s)
 
-        s = re.sub('PATH_TO_BE_CONFIGURED/pet_label_map.pbtxt', os.path.abspath(os.path.join(_cur_dir, "pet_label_map.pbtxt")), s)
+        s = re.sub('PATH_TO_BE_CONFIGURED/pet_label_map.pbtxt', os.path.abspath(os.path.join(_cur_dir, "labelmap.pbtxt")), s)
 
         f.write(s)
 
@@ -52,7 +52,7 @@ if __name__ == '__main__':
 
     model_config = os.path.join(_cur_dir, "faster_rcnn_inception_v2_pets.config")
     if not os.path.exists(model_config):
-        create_config_file(config_file=model_config, pretrained_model_dir=model_dir)
+        create_config_file(config_file=model_config, pretrained_model_dir=os.path.join(_cur_dir, "pretrained_models"))
 
     train(
         model_config=model_config,
