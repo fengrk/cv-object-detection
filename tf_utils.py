@@ -163,19 +163,10 @@ def show_image_with_bounding_box(image_info: detection_data):
     plt.imshow(image_np)
 
 
-def predict(frozen_inference_dir: str, label_map: str, image_file_list: list, show_image: bool = False, batch_size: int = 1) -> list:
+def do_predict(run_inference, label_map: str, image_file_list: list, show_image: bool = False, batch_size: int = 1) -> list:
     # What model to download.
     # Path to frozen detection graph. This is the actual model that is used for the object detection.
     num_classes = 1
-    inference_graph = os.path.join(frozen_inference_dir, 'frozen_inference_graph.pb')
-
-    detection_graph = tf.Graph()
-    with detection_graph.as_default():
-        od_graph_def = tf.GraphDef()
-        with tf.gfile.GFile(inference_graph, 'rb') as fid:
-            serialized_graph = fid.read()
-            od_graph_def.ParseFromString(serialized_graph)
-            tf.import_graph_def(od_graph_def, name='')
 
     label_map = label_map_util.load_labelmap(label_map)
     categories = label_map_util.convert_label_map_to_categories(
@@ -192,7 +183,8 @@ def predict(frozen_inference_dir: str, label_map: str, image_file_list: list, sh
     for image_path_list in iter_list_with_size(image_file_list, size=batch_size):
         _image_obj_list = [get_image(image_path, width=344, height=344) for image_path in image_path_list]
         image_np_list = [load_image_into_numpy_array(image) for image in _image_obj_list]
-        output_dict_list = run_inference_image_list(image_np_list, detection_graph)
+
+        output_dict_list = run_inference(image_np_list)
 
         _step += len(image_path_list)
         logging.info("predict {}/{}".format(_step, image_count))
@@ -223,6 +215,25 @@ def predict(frozen_inference_dir: str, label_map: str, image_file_list: list, sh
                 plt.imshow(image_np)
 
     return result_list
+
+
+def predict(frozen_inference_dir: str, label_map: str, image_file_list: list, show_image: bool = False, batch_size: int = 1) -> list:
+    # What model to download.
+    # Path to frozen detection graph. This is the actual model that is used for the object detection.
+    inference_graph = os.path.join(frozen_inference_dir, 'frozen_inference_graph.pb')
+
+    detection_graph = tf.Graph()
+    with detection_graph.as_default():
+        od_graph_def = tf.GraphDef()
+        with tf.gfile.GFile(inference_graph, 'rb') as fid:
+            serialized_graph = fid.read()
+            od_graph_def.ParseFromString(serialized_graph)
+            tf.import_graph_def(od_graph_def, name='')
+
+    def run_inference(_image_np_list):
+        return run_inference_image_list(image_list=_image_np_list, graph=detection_data)
+
+    return do_predict(run_inference, label_map=label_map, image_file_list=image_file_list, show_image=show_image, batch_size=batch_size)
 
 
 def save_detection_result(result_list: list, output_file: str):
